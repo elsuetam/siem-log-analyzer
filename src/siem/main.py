@@ -25,15 +25,20 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def run() -> int:
     """Executa a aplicação. Retorna o código de saída do processo."""
-    setup_logging()
     settings = get_settings()
+    setup_logging()
+    settings.ensure_directories_exist()
 
     parser = build_arg_parser()
     parser.parse_args()
 
     print("SIEM / Log Analyzer inicializado.")
     print(f"Diretório de logs brutos: {settings.raw_logs_dir}")
-    print(f"Diretório de saída: {settings.output_dir}")
+    print(f"Diretório de dados processados: {settings.processed_dir}")
+    print(f"Diretório de relatórios: {settings.reports_dir}")
+    print(f"Diretório de dashboards: {settings.dashboards_dir}")
+    print(f"Threshold de brute force: {settings.brute_force_attempts_threshold} tentativas "
+          f"em {settings.brute_force_window_seconds}s")
     print("Pipeline de análise ainda não implementado (próximas etapas).")
 
     return 0

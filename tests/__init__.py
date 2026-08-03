@@ -1,1 +1,1 @@
-"""Pacote de testes do SIEM / Log Analyzer."""
+"""Testes unitários do SIEM / Log Analyzer."""
