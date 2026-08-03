@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
 
+from siem.models.detection_event import DetectionEvent
 from siem.models.log_entry import LogEntry
 
 
@@ -16,15 +16,22 @@ class BaseDetector(ABC):
     (incluindo futuramente Sigma Rules / YARA) sem alterar o pipeline principal.
     """
 
+    @property
     @abstractmethod
-    def detect(self, entries: list[LogEntry]) -> list[dict[str, Any]]:
+    def name(self) -> str:
+        """Identificador legível do detector (usado em DetectionEvent.detector_name)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def detect(self, entries: list[LogEntry]) -> list[DetectionEvent]:
         """Analisa uma lista de entradas de log e retorna eventos suspeitos encontrados.
 
         Args:
-            entries: lista de LogEntry já parseadas.
+            entries: lista de LogEntry já parseadas, tipicamente ordenadas por
+                timestamp (mas implementações não devem assumir ordenação).
 
         Returns:
-            Lista de dicionários descrevendo cada ocorrência suspeita encontrada.
-            O formato exato será definido/tipado na etapa de "Detectores de eventos".
+            Lista de DetectionEvent, uma para cada ocorrência suspeita agrupada
+            (ex: um DetectionEvent por IP que excedeu o threshold, não um por linha de log).
         """
         raise NotImplementedError
