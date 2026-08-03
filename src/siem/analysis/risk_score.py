@@ -6,9 +6,10 @@ arquitetura.
 """
 
 from __future__ import annotations
+from typing import Any
 
 
-def calculate_risk_score(detections: list[dict]) -> float:
+def calculate_risk_score(detections: list[dict[str, Any]]) -> float:
     """Calcula um score de risco agregado a partir das detecções encontradas.
 
     Args:

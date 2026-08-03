@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from siem.models.log_entry import LogEntry
 
@@ -16,7 +17,7 @@ class BaseDetector(ABC):
     """
 
     @abstractmethod
-    def detect(self, entries: list[LogEntry]) -> list[dict]:
+    def detect(self, entries: list[LogEntry]) -> list[dict[str, Any]]:
         """Analisa uma lista de entradas de log e retorna eventos suspeitos encontrados.
 
         Args:
