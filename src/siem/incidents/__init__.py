@@ -1,0 +1,1 @@
+"""Módulo de geração e modelagem de incidentes."""

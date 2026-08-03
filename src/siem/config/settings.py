@@ -55,7 +55,7 @@ class Settings(BaseSettings):
         description="Timezone usada para normalizar timestamps dos logs.",
     )
 
-    # --- Thresholds de detecção (usados nas etapas futuras de detectors/) ---
+    # --- Thresholds de detecção ---
     brute_force_attempts_threshold: int = Field(
         default=5,
         ge=1,
@@ -75,6 +75,14 @@ class Settings(BaseSettings):
         default=10,
         ge=1,
         description="Janela de tempo (em segundos) para contabilizar comportamento de scanner.",
+    )
+
+    # --- Geração de incidentes ---
+    incident_risk_score_threshold: float = Field(
+        default=25.0,
+        ge=0.0,
+        le=100.0,
+        description="Score de risco mínimo para que um IP gere um incidente formal.",
     )
 
     @field_validator("log_level")

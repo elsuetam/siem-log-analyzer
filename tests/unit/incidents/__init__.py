@@ -1,0 +1,1 @@
+"""Testes unitários do módulo de geração de incidentes."""
