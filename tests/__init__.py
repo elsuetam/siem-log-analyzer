@@ -1,1 +1,1 @@
-"""Testes unitários do SIEM / Log Analyzer."""
+"""Testes unitários dos parsers."""
