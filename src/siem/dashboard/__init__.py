@@ -1,0 +1,1 @@
+"""Módulo reservado para etapa futura do pipeline (ver docs/architecture.md)."""

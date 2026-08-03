@@ -1,0 +1,1 @@
+"""Modelos de dados do SIEM (LogEntry, Incident, etc.)."""

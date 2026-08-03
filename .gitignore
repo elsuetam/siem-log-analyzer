@@ -1,0 +1,46 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Logs e dados gerados (dados brutos e processados não devem ir pro repo)
+data/raw_logs/*
+!data/raw_logs/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+output/reports/*
+!output/reports/.gitkeep
+output/dashboards/*
+!output/dashboards/.gitkeep
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# SO
+.DS_Store
+Thumbs.db

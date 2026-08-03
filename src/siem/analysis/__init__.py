@@ -1,0 +1,1 @@
+"""Módulo de análise: estatísticas e cálculo de score de risco."""

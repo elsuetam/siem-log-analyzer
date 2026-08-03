@@ -1,0 +1,1 @@
+"""Módulo de detectores de eventos suspeitos."""

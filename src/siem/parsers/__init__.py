@@ -1,0 +1,1 @@
+"""Módulo de parsers responsáveis por interpretar diferentes formatos de log."""
