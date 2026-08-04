@@ -88,7 +88,7 @@ def run() -> int:
 
     print(f"Processando {len(log_files)} arquivo(s) de log...")
 
-    incidents = run_pipeline(
+    result = run_pipeline(
         log_files=log_files,
         parser=CombinedLogFormatParser(),
         detectors=_build_detectors(settings),
@@ -96,11 +96,18 @@ def run() -> int:
         encoding=settings.file_encoding,
     )
 
-    _print_incidents(incidents)
+    _print_incidents(result.incidents)
 
     dashboard_path = settings.dashboards_dir / "dashboard.html"
     renderer = DashboardRenderer()
-    renderer.render_to_file(DashboardData(incidents=incidents), dashboard_path)
+    renderer.render_to_file(
+        DashboardData(
+            incidents=result.incidents,
+            total_entries=result.total_entries,
+            total_detections=result.total_detections,
+        ),
+        dashboard_path,
+    )
     print(f"Dashboard salvo em: {dashboard_path.resolve()}")
 
     return 0

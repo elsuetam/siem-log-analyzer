@@ -28,7 +28,7 @@ def test_pipeline_end_to_end_generates_incident_for_brute_force(tmp_path: Path) 
     log_file = tmp_path / "access.log"
     log_file.write_text(f"{_BRUTE_FORCE_LINES}\n{_NORMAL_LINE}\n", encoding="utf-8")
 
-    incidents = run_pipeline(
+    result = run_pipeline(
         log_files=[log_file],
         parser=CombinedLogFormatParser(),
         detectors=[
@@ -38,9 +38,11 @@ def test_pipeline_end_to_end_generates_incident_for_brute_force(tmp_path: Path) 
         risk_threshold=25.0,
     )
 
-    assert len(incidents) == 1
-    assert incidents[0].source_ip == "10.0.0.9"
-    assert "brute_force_detector" in incidents[0].title
+    assert len(result.incidents) == 1
+    assert result.incidents[0].source_ip == "10.0.0.9"
+    assert "brute_force_detector" in result.incidents[0].title
+    assert result.total_entries == 7
+    assert result.total_detections == 1
 
 
 def test_pipeline_with_only_normal_traffic_generates_no_incidents(tmp_path: Path) -> None:
@@ -48,7 +50,7 @@ def test_pipeline_with_only_normal_traffic_generates_no_incidents(tmp_path: Path
     log_file = tmp_path / "access.log"
     log_file.write_text(f"{_NORMAL_LINE}\n", encoding="utf-8")
 
-    incidents = run_pipeline(
+    result = run_pipeline(
         log_files=[log_file],
         parser=CombinedLogFormatParser(),
         detectors=[
@@ -58,7 +60,9 @@ def test_pipeline_with_only_normal_traffic_generates_no_incidents(tmp_path: Path
         risk_threshold=25.0,
     )
 
-    assert incidents == []
+    assert result.incidents == []
+    assert result.total_entries == 1
+    assert result.total_detections == 0
 
 
 def test_pipeline_skips_malformed_lines_without_failing(tmp_path: Path) -> None:
@@ -66,7 +70,7 @@ def test_pipeline_skips_malformed_lines_without_failing(tmp_path: Path) -> None:
     log_file = tmp_path / "access.log"
     log_file.write_text(f"linha totalmente inválida\n{_NORMAL_LINE}\n", encoding="utf-8")
 
-    incidents = run_pipeline(
+    result = run_pipeline(
         log_files=[log_file],
         parser=CombinedLogFormatParser(),
         detectors=[BruteForceDetector(attempts_threshold=5, window_seconds=60)],
@@ -74,7 +78,8 @@ def test_pipeline_skips_malformed_lines_without_failing(tmp_path: Path) -> None:
     )
 
     # Não deve levantar exceção; e como não há padrão suspeito, nenhum incidente
-    assert incidents == []
+    assert result.incidents == []
+    assert result.total_entries == 1
 
 
 def test_pipeline_processes_multiple_files(tmp_path: Path) -> None:
@@ -84,7 +89,7 @@ def test_pipeline_processes_multiple_files(tmp_path: Path) -> None:
     file_a.write_text("\n".join(_BRUTE_FORCE_LINES.split("\n")[:3]) + "\n", encoding="utf-8")
     file_b.write_text("\n".join(_BRUTE_FORCE_LINES.split("\n")[3:]) + "\n", encoding="utf-8")
 
-    incidents = run_pipeline(
+    result = run_pipeline(
         log_files=[file_a, file_b],
         parser=CombinedLogFormatParser(),
         detectors=[BruteForceDetector(attempts_threshold=5, window_seconds=60)],
@@ -92,5 +97,6 @@ def test_pipeline_processes_multiple_files(tmp_path: Path) -> None:
     )
 
     # As 6 tentativas, mesmo separadas em 2 arquivos, devem ser combinadas e detectadas
-    assert len(incidents) == 1
-    assert incidents[0].source_ip == "10.0.0.9"
+    assert len(result.incidents) == 1
+    assert result.incidents[0].source_ip == "10.0.0.9"
+    assert result.total_entries == 6

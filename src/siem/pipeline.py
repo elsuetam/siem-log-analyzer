@@ -8,6 +8,7 @@ completo do pipeline.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 from siem.analysis.risk_score import calculate_risk_scores
@@ -20,6 +21,15 @@ from siem.parsers.base import BaseParser
 from siem.parsers.exceptions import MalformedLogLineError
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class PipelineResult:
+    """Resultado agregado de uma execução completa do pipeline."""
+
+    incidents: list[Incident]
+    total_entries: int
+    total_detections: int
 
 
 def parse_log_file(log_file: Path, parser: BaseParser, encoding: str) -> list[LogEntry]:
@@ -61,7 +71,7 @@ def run_pipeline(
     detectors: list[BaseDetector],
     risk_threshold: float,
     encoding: str = "utf-8",
-) -> list[Incident]:
+) -> PipelineResult:
     """Executa o pipeline completo de análise sobre um conjunto de arquivos de log.
 
     Args:
@@ -72,7 +82,8 @@ def run_pipeline(
         encoding: encoding usado para ler os arquivos.
 
     Returns:
-        Lista de Incident gerados, ordenada do maior para o menor score de risco.
+        PipelineResult contendo os incidentes gerados e os contadores agregados
+        da execução (total de entradas parseadas e total de detecções brutas).
     """
     all_entries: list[LogEntry] = []
     for log_file in log_files:
@@ -96,4 +107,8 @@ def run_pipeline(
         len(incidents),
     )
 
-    return incidents
+    return PipelineResult(
+        incidents=incidents,
+        total_entries=len(all_entries),
+        total_detections=len(all_detections),
+    )
