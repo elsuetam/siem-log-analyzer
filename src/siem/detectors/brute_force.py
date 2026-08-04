@@ -8,6 +8,7 @@ from datetime import timedelta
 from siem.detectors.base import BaseDetector
 from siem.models.detection_event import DetectionEvent, DetectionSeverity
 from siem.models.log_entry import LogEntry
+from siem.utils.sliding_window import find_windows_meeting_threshold
 
 # Status codes que indicam falha de autenticação/autorização
 _AUTH_FAILURE_STATUS_CODES = {401, 403}
@@ -50,7 +51,13 @@ class BruteForceDetector(BaseDetector):
         events: list[DetectionEvent] = []
         for source_ip, failures in failures_by_ip.items():
             failures.sort(key=lambda e: e.timestamp)
-            events.extend(self._detect_windows(source_ip, failures))
+            windows = find_windows_meeting_threshold(
+                items=failures,
+                get_timestamp=lambda e: e.timestamp,
+                window=self._window,
+                meets_threshold=lambda group: len(group) >= self._attempts_threshold,
+            )
+            events.extend(self._build_event(source_ip, group) for group in windows)
 
         return events
 
@@ -59,28 +66,6 @@ class BruteForceDetector(BaseDetector):
             return False
         path_lower = entry.path.lower()
         return any(hint in path_lower for hint in _LOGIN_PATH_HINTS)
-
-    def _detect_windows(self, source_ip: str, failures: list[LogEntry]) -> list[DetectionEvent]:
-        """Aplica uma janela deslizante sobre as falhas ordenadas de um IP.
-
-        Usa uma estratégia de ponteiro duplo (sliding window) para agrupar
-        falhas que ocorrem dentro do intervalo de tempo configurado.
-        """
-        events: list[DetectionEvent] = []
-        window_start_idx = 0
-
-        for end_idx in range(len(failures)):
-            while failures[end_idx].timestamp - failures[window_start_idx].timestamp > self._window:
-                window_start_idx += 1
-
-            window_size = end_idx - window_start_idx + 1
-            if window_size >= self._attempts_threshold:
-                window_entries = failures[window_start_idx : end_idx + 1]
-                events.append(self._build_event(source_ip, window_entries))
-                # Avança o início da janela para evitar sobreposição de detecções
-                window_start_idx = end_idx + 1
-
-        return events
 
     def _build_event(self, source_ip: str, window_entries: list[LogEntry]) -> DetectionEvent:
         return DetectionEvent(
