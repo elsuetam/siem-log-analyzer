@@ -57,3 +57,12 @@ def test_ensure_directories_creates_missing_paths(tmp_path: Path) -> None:
     assert settings.processed_dir.exists()
     assert settings.reports_dir.exists()
     assert settings.dashboards_dir.exists()
+
+
+def test_get_settings_returns_settings_instance() -> None:
+    """get_settings() deve retornar uma instância válida de Settings (via cache)."""
+    from siem.config.settings import get_settings
+
+    settings = get_settings()
+
+    assert isinstance(settings, Settings)

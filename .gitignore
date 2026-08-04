@@ -44,3 +44,4 @@ htmlcov/
 # SO
 .DS_Store
 Thumbs.db
+htmlcov/

@@ -100,3 +100,17 @@ def test_pipeline_processes_multiple_files(tmp_path: Path) -> None:
     assert len(result.incidents) == 1
     assert result.incidents[0].source_ip == "10.0.0.9"
     assert result.total_entries == 6
+
+def test_pipeline_skips_blank_lines_within_run_pipeline(tmp_path: Path) -> None:
+    """Linhas em branco no arquivo não devem gerar entradas nem quebrar o pipeline."""
+    log_file = tmp_path / "access.log"
+    log_file.write_text(f"\n{_NORMAL_LINE}\n\n", encoding="utf-8")
+
+    result = run_pipeline(
+        log_files=[log_file],
+        parser=CombinedLogFormatParser(),
+        detectors=[BruteForceDetector(attempts_threshold=5, window_seconds=60)],
+        risk_threshold=25.0,
+    )
+
+    assert result.total_entries == 1

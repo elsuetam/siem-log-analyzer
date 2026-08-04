@@ -93,3 +93,24 @@ def test_parse_lines_propagates_malformed_line_error(
 
     with pytest.raises(MalformedLogLineError):
         parser.parse_lines(lines)
+
+def test_parse_line_with_invalid_bytes_field_raises_error(
+    parser: CombinedLogFormatParser,
+) -> None:
+    """Uma linha com campo bytes não-numérico (e diferente de '-') deve levantar erro."""
+    bad_line = VALID_LINE.replace(" 2326 ", " abc ")
+
+    with pytest.raises(MalformedLogLineError):
+        parser.parse_line(bad_line)
+
+
+def test_parse_line_with_out_of_range_status_code_raises_error(
+    parser: CombinedLogFormatParser,
+) -> None:
+    """Um status code de 3 dígitos mas fora do range HTTP válido deve ser rejeitado."""
+    bad_line = VALID_LINE.replace(
+        '"GET /index.html HTTP/1.1" 200', '"GET /index.html HTTP/1.1" 999'
+    )
+
+    with pytest.raises(MalformedLogLineError):
+        parser.parse_line(bad_line)

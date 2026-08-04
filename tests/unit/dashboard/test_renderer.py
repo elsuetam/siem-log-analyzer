@@ -93,3 +93,22 @@ def test_render_to_file_creates_missing_parent_directories(tmp_path: Path) -> No
     renderer.render_to_file(data, output_path)
 
     assert output_path.exists()
+
+
+def test_incident_view_falls_back_to_low_when_no_contributing_events() -> None:
+    """Quando não há eventos contribuintes, highest_severity deve retornar 'low' por padrão."""
+    risk_score = RiskScore(
+        source_ip="0.0.0.0", score=0.0, contributing_events=[], distinct_detectors=0
+    )
+    incident = Incident(
+        source_ip="0.0.0.0",
+        risk_score=0.0,
+        title="Incidente sem eventos",
+        risk_details=risk_score,
+    )
+    renderer = DashboardRenderer()
+    data = DashboardData(incidents=[incident])
+
+    html = renderer.render(data)
+
+    assert "severity-low" in html
