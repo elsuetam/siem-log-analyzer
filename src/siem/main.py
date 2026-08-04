@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from siem.config.settings import Settings, get_settings
+from siem.dashboard.renderer import DashboardData, DashboardRenderer
 from siem.detectors.base import BaseDetector
 from siem.detectors.brute_force import BruteForceDetector
 from siem.detectors.scanner import ScannerDetector
@@ -96,6 +97,11 @@ def run() -> int:
     )
 
     _print_incidents(incidents)
+
+    dashboard_path = settings.dashboards_dir / "dashboard.html"
+    renderer = DashboardRenderer()
+    renderer.render_to_file(DashboardData(incidents=incidents), dashboard_path)
+    print(f"Dashboard salvo em: {dashboard_path.resolve()}")
 
     return 0
 
