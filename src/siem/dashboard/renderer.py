@@ -8,6 +8,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from siem.dashboard.chart_data import build_severity_distribution, build_top_source_ips
 from siem.models.incident import Incident
 
 _TEMPLATES_DIR = Path(__file__).resolve().parents[3] / "templates"
@@ -69,6 +70,8 @@ class DashboardRenderer:
             total_entries=data.total_entries,
             total_detections=data.total_detections,
             generated_at=datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            severity_distribution=build_severity_distribution(data.incidents),
+            top_source_ips=build_top_source_ips(data.incidents),
         )
 
     def render_to_file(self, data: DashboardData, output_path: Path) -> Path:
