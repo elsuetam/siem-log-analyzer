@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from siem.models.geo_location import GeoLocation
 from siem.models.risk_score import RiskScore
 
 
@@ -46,4 +47,11 @@ class Incident(BaseModel):
     title: str = Field(description="Título curto e legível do incidente.")
     risk_details: RiskScore = Field(
         description="Detalhamento completo do score de risco (eventos contribuintes)."
+    )
+    geo_location: GeoLocation | None = Field(
+        default=None,
+        description=(
+            "Dados de geolocalização do IP de origem, se o "
+            "enriquecimento GeoIP estiver habilitado."
+        ),
     )

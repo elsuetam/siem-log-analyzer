@@ -261,6 +261,9 @@
                 </div>
                 <div class="incident-meta">
                     <span>IP: {{ incident.source_ip }}</span>
+                    {% if incident.geo_location and not incident.geo_location.is_private and incident.geo_location.country %}
+                    <span>📍 {{ incident.geo_location.city or "?" }}, {{ incident.geo_location.country }}</span>
+                    {% endif %}
                     <span>{{ incident.risk_details.contributing_events|length }} evento(s)</span>
                     <span class="status-badge">{{ incident.status.value }}</span>
                 </div>

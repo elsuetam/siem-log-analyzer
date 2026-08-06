@@ -61,6 +61,25 @@ class Settings(BaseSettings):
         ge=1,
         description="Número de tentativas falhas de login para caracterizar brute force.",
     )
+
+    # --- Geração de incidentes ---
+    incident_risk_score_threshold: float = Field(
+        default=25.0,
+        ge=0.0,
+        le=100.0,
+        description="Score de risco mínimo para que um IP gere um incidente formal.",
+    )
+
+    # --- Enriquecimento GeoIP ---
+    enable_geoip: bool = Field(
+        default=False,
+        description="Se True, consulta a geolocalização dos IPs de origem via API externa.",
+    )
+    geoip_timeout_seconds: float = Field(
+        default=5.0,
+        ge=0.1,
+        description="Tempo máximo de espera pela resposta da API de GeoIP.",
+    )
     brute_force_window_seconds: int = Field(
         default=60,
         ge=1,
@@ -78,13 +97,7 @@ class Settings(BaseSettings):
     )
 
     # --- Geração de incidentes ---
-    incident_risk_score_threshold: float = Field(
-        default=25.0,
-        ge=0.0,
-        le=100.0,
-        description="Score de risco mínimo para que um IP gere um incidente formal.",
-    )
-
+    
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, value: str) -> str:

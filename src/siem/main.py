@@ -11,6 +11,7 @@ from siem.dashboard.renderer import DashboardData, DashboardRenderer
 from siem.detectors.base import BaseDetector
 from siem.detectors.brute_force import BruteForceDetector
 from siem.detectors.scanner import ScannerDetector
+from siem.enrichment.geoip import GeoIPEnricher
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
 from siem.pipeline import run_pipeline
@@ -59,6 +60,24 @@ def _build_detectors(settings: Settings) -> list[BaseDetector]:
     ]
 
 
+def _enrich_with_geoip(incidents: list[Incident], settings: Settings) -> list[Incident]:
+    """Enriquece os incidentes com dados de geolocalização, se habilitado nas settings.
+
+    Retorna a lista original sem modificação se enable_geoip estiver desligado
+    ou se não houver incidentes — evita chamadas de rede desnecessárias.
+    """
+    if not settings.enable_geoip or not incidents:
+        return incidents
+
+    enricher = GeoIPEnricher(timeout_seconds=settings.geoip_timeout_seconds)
+    geo_by_ip = enricher.enrich([incident.source_ip for incident in incidents])
+
+    return [
+        incident.model_copy(update={"geo_location": geo_by_ip.get(incident.source_ip)})
+        for incident in incidents
+    ]
+
+
 def _print_incidents(incidents: list[Incident]) -> None:
     """Exibe um resumo legível dos incidentes gerados no terminal."""
     if not incidents:
@@ -68,6 +87,9 @@ def _print_incidents(incidents: list[Incident]) -> None:
     print(f"\n{len(incidents)} incidente(s) gerado(s):\n")
     for incident in incidents:
         print(f"  [{incident.risk_score:.0f}] {incident.title}")
+        location = incident.geo_location
+        if location is not None and not location.is_private and location.country:
+            print(f"       Local: {location.city or '?'}, {location.country}")
         print(f"       ID: {incident.incident_id} | Status: {incident.status.value}\n")
 
 
@@ -96,13 +118,15 @@ def run() -> int:
         encoding=settings.file_encoding,
     )
 
-    _print_incidents(result.incidents)
+    incidents = _enrich_with_geoip(result.incidents, settings)
+
+    _print_incidents(incidents)
 
     dashboard_path = settings.dashboards_dir / "dashboard.html"
     renderer = DashboardRenderer()
     renderer.render_to_file(
         DashboardData(
-            incidents=result.incidents,
+            incidents=incidents,
             total_entries=result.total_entries,
             total_detections=result.total_detections,
         ),

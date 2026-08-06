@@ -100,3 +100,15 @@ def test_print_incidents_with_data_prints_titles_and_ids(capsys) -> None:  # typ
     captured = capsys.readouterr()
     assert "1.2.3.4" in captured.out
     assert incident.incident_id in captured.out
+
+def test_enrich_with_geoip_returns_unchanged_when_disabled() -> None:
+    """Com enable_geoip desligado (padrão), a lista de incidentes não deve ser alterada."""
+    from siem.main import _enrich_with_geoip
+
+    settings = Settings(_env_file=None)
+    incident = _make_incident("1.2.3.4", 50.0)
+
+    result = _enrich_with_geoip([incident], settings)
+
+    assert result == [incident]
+    assert result[0].geo_location is None
