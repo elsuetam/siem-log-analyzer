@@ -17,6 +17,7 @@ from siem.enrichment.geoip import GeoIPEnricher
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
 from siem.pipeline import run_pipeline
+from siem.reports.pdf_report import PDFReportGenerator
 from siem.utils.logging_config import setup_logging
 
 
@@ -137,6 +138,16 @@ def run() -> int:
         dashboard_path,
     )
     print(f"Dashboard salvo em: {dashboard_path.resolve()}")
+
+    report_path = settings.reports_dir / "report.pdf"
+    pdf_generator = PDFReportGenerator()
+    pdf_generator.generate(
+        incidents=incidents,
+        output_path=report_path,
+        total_entries=result.total_entries,
+        total_detections=result.total_detections,
+    )
+    print(f"Relatório PDF salvo em: {report_path.resolve()}")
 
     return 0
 
