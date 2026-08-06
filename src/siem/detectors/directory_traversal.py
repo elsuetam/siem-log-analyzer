@@ -6,6 +6,7 @@ import re
 from collections import defaultdict
 
 from siem.detectors.base import BaseDetector
+from siem.mitre.attack_reference import EXPLOIT_PUBLIC_FACING_APPLICATION
 from siem.models.detection_event import DetectionEvent, DetectionSeverity
 from siem.models.log_entry import LogEntry
 
@@ -57,4 +58,6 @@ class DirectoryTraversalDetector(BaseDetector):
             first_seen=sorted_matches[0].timestamp,
             last_seen=sorted_matches[-1].timestamp,
             occurrence_count=len(matches),
+            mitre_technique_id=EXPLOIT_PUBLIC_FACING_APPLICATION.technique_id,
+            mitre_technique_name=EXPLOIT_PUBLIC_FACING_APPLICATION.name,
         )

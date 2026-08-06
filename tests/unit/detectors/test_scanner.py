@@ -66,3 +66,12 @@ def test_paths_outside_window_do_not_count_together(detector: ScannerDetector) -
     events = detector.detect(entries)
 
     assert events == []
+
+
+def test_detection_event_includes_mitre_technique(detector: ScannerDetector) -> None:
+    """O evento gerado deve incluir a técnica MITRE ATT&CK correspondente (T1595)."""
+    entries = [make_entry("9.9.9.9", offset_ms=i * 400, path=f"/path-{i}") for i in range(20)]
+
+    events = detector.detect(entries)
+
+    assert events[0].mitre_technique_id == "T1595"

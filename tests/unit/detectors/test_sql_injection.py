@@ -85,3 +85,12 @@ def test_tracks_different_ips_independently(detector: SqlInjectionDetector) -> N
     events = detector.detect(entries)
 
     assert len(events) == 2
+
+
+def test_detection_event_includes_mitre_technique(detector: SqlInjectionDetector) -> None:
+    """O evento gerado deve incluir a técnica MITRE ATT&CK correspondente (T1190)."""
+    entries = [make_entry("1.1.1.1", "/a?id=1' OR '1'='1")]
+
+    events = detector.detect(entries)
+
+    assert events[0].mitre_technique_id == "T1190"

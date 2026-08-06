@@ -75,3 +75,12 @@ def test_aggregates_multiple_matches_from_same_ip(detector: DirectoryTraversalDe
 
     assert len(events) == 1
     assert events[0].occurrence_count == 2
+
+
+def test_detection_event_includes_mitre_technique(detector: DirectoryTraversalDetector) -> None:
+    """O evento gerado deve incluir a técnica MITRE ATT&CK correspondente (T1190)."""
+    entries = [make_entry("1.1.1.1", "/a?f=../../etc/passwd")]
+
+    events = detector.detect(entries)
+
+    assert events[0].mitre_technique_id == "T1190"

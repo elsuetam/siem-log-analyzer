@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from datetime import timedelta
 
 from siem.detectors.base import BaseDetector
+from siem.mitre.attack_reference import ACTIVE_SCANNING
 from siem.models.detection_event import DetectionEvent, DetectionSeverity
 from siem.models.log_entry import LogEntry
 from siem.utils.sliding_window import find_windows_meeting_threshold
@@ -70,4 +71,6 @@ class ScannerDetector(BaseDetector):
             first_seen=window_entries[0].timestamp,
             last_seen=window_entries[-1].timestamp,
             occurrence_count=len(window_entries),
+            mitre_technique_id=ACTIVE_SCANNING.technique_id,
+            mitre_technique_name=ACTIVE_SCANNING.name,
         )

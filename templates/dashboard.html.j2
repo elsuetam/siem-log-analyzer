@@ -267,6 +267,13 @@
                     <span>{{ incident.risk_details.contributing_events|length }} evento(s)</span>
                     <span class="status-badge">{{ incident.status.value }}</span>
                 </div>
+                {% set mitre_ids = incident.risk_details.contributing_events
+                    | map(attribute="mitre_technique_id") | select() | unique | list %}
+                {% if mitre_ids %}
+                <div class="incident-meta">
+                    <span>MITRE ATT&amp;CK: {{ mitre_ids | join(", ") }}</span>
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

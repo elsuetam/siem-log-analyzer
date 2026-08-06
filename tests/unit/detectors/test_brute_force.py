@@ -94,3 +94,13 @@ def test_tracks_different_ips_independently(detector: BruteForceDetector) -> Non
 
     assert len(events) == 1
     assert events[0].source_ip == "1.2.3.4"
+
+
+def test_detection_event_includes_mitre_technique(detector: BruteForceDetector) -> None:
+    """O evento gerado deve incluir a técnica MITRE ATT&CK correspondente (T1110)."""
+    entries = [make_entry("1.2.3.4", offset_seconds=i * 10) for i in range(5)]
+
+    events = detector.detect(entries)
+
+    assert events[0].mitre_technique_id == "T1110"
+    assert events[0].mitre_technique_name == "Brute Force"

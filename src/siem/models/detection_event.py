@@ -38,3 +38,9 @@ class DetectionEvent(BaseModel):
     occurrence_count: int = Field(
         ge=1, description="Número de ocorrências que geraram esta detecção."
     )
+    mitre_technique_id: str | None = Field(
+        default=None, description="ID da técnica MITRE ATT&CK correspondente (ex: T1110)."
+    )
+    mitre_technique_name: str | None = Field(
+        default=None, description="Nome da técnica MITRE ATT&CK correspondente."
+    )

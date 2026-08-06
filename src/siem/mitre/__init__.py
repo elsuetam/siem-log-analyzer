@@ -1,0 +1,1 @@
+"""Referência ao framework MITRE ATT&CK usada para classificar detecções."""
