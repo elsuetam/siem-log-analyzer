@@ -7,7 +7,9 @@ from pathlib import Path
 
 from siem.config.settings import Settings
 from siem.detectors.brute_force import BruteForceDetector
+from siem.detectors.directory_traversal import DirectoryTraversalDetector
 from siem.detectors.scanner import ScannerDetector
+from siem.detectors.sql_injection import SqlInjectionDetector
 from siem.main import _build_detectors, _discover_log_files, _print_incidents, build_arg_parser
 from siem.models.detection_event import DetectionEvent, DetectionSeverity
 from siem.models.incident import Incident
@@ -54,15 +56,17 @@ def test_discover_log_files_globs_directory_when_no_explicit_file(tmp_path: Path
     assert result == [tmp_path / "a.log", tmp_path / "b.log"]
 
 
-def test_build_detectors_returns_brute_force_and_scanner() -> None:
+def test_build_detectors_returns_all_configured_detectors() -> None:
     """_build_detectors deve montar exatamente os detectores esperados a partir das settings."""
     settings = Settings(_env_file=None)
 
     detectors = _build_detectors(settings)
 
-    assert len(detectors) == 2
+    assert len(detectors) == 4
     assert isinstance(detectors[0], BruteForceDetector)
     assert isinstance(detectors[1], ScannerDetector)
+    assert isinstance(detectors[2], SqlInjectionDetector)
+    assert isinstance(detectors[3], DirectoryTraversalDetector)
 
 
 def _make_incident(source_ip: str, score: float) -> Incident:
@@ -100,6 +104,7 @@ def test_print_incidents_with_data_prints_titles_and_ids(capsys) -> None:  # typ
     captured = capsys.readouterr()
     assert "1.2.3.4" in captured.out
     assert incident.incident_id in captured.out
+
 
 def test_enrich_with_geoip_returns_unchanged_when_disabled() -> None:
     """Com enable_geoip desligado (padrão), a lista de incidentes não deve ser alterada."""

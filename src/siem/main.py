@@ -10,7 +10,9 @@ from siem.config.settings import Settings, get_settings
 from siem.dashboard.renderer import DashboardData, DashboardRenderer
 from siem.detectors.base import BaseDetector
 from siem.detectors.brute_force import BruteForceDetector
+from siem.detectors.directory_traversal import DirectoryTraversalDetector
 from siem.detectors.scanner import ScannerDetector
+from siem.detectors.sql_injection import SqlInjectionDetector
 from siem.enrichment.geoip import GeoIPEnricher
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
@@ -57,6 +59,8 @@ def _build_detectors(settings: Settings) -> list[BaseDetector]:
             requests_threshold=settings.scanner_requests_threshold,
             window_seconds=settings.scanner_window_seconds,
         ),
+        SqlInjectionDetector(),
+        DirectoryTraversalDetector(),
     ]
 
 
