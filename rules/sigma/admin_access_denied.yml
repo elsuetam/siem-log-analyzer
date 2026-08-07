@@ -1,0 +1,9 @@
+title: Acesso negado a área administrativa
+id: sigma-001
+description: Detecta tentativas de acesso a paths administrativos que resultaram em 403 Forbidden
+severity: high
+detection:
+  selection:
+    path_contains: "/admin"
+    status_code: 403
+  condition: selection

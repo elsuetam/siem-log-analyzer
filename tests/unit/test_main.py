@@ -9,7 +9,9 @@ from siem.config.settings import Settings
 from siem.detectors.brute_force import BruteForceDetector
 from siem.detectors.directory_traversal import DirectoryTraversalDetector
 from siem.detectors.scanner import ScannerDetector
+from siem.detectors.sigma_rule import SigmaRuleDetector
 from siem.detectors.sql_injection import SqlInjectionDetector
+from siem.detectors.yara_rule import YaraDetector
 from siem.main import _build_detectors, _discover_log_files, _print_incidents, build_arg_parser
 from siem.models.detection_event import DetectionEvent, DetectionSeverity
 from siem.models.incident import Incident
@@ -62,11 +64,13 @@ def test_build_detectors_returns_all_configured_detectors() -> None:
 
     detectors = _build_detectors(settings)
 
-    assert len(detectors) == 4
+    assert len(detectors) == 6
     assert isinstance(detectors[0], BruteForceDetector)
     assert isinstance(detectors[1], ScannerDetector)
     assert isinstance(detectors[2], SqlInjectionDetector)
     assert isinstance(detectors[3], DirectoryTraversalDetector)
+    assert isinstance(detectors[4], SigmaRuleDetector)
+    assert isinstance(detectors[5], YaraDetector)
 
 
 def _make_incident(source_ip: str, score: float) -> Incident:

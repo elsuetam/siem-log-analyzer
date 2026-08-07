@@ -96,6 +96,16 @@ class Settings(BaseSettings):
         description="Janela de tempo (em segundos) para contabilizar comportamento de scanner.",
     )
 
+    # --- Regras externas (Sigma / YARA) ---
+    sigma_rules_dir: Path = Field(
+        default=Path("rules/sigma"),
+        description="Diretório contendo regras Sigma (.yml) a serem avaliadas.",
+    )
+    yara_rules_dir: Path = Field(
+        default=Path("rules/yara"),
+        description="Diretório contendo regras YARA (.yar/.yara) a serem avaliadas.",
+    )
+
     # --- Geração de incidentes ---
     
     @field_validator("log_level")

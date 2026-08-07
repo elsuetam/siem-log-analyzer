@@ -12,7 +12,9 @@ from siem.detectors.base import BaseDetector
 from siem.detectors.brute_force import BruteForceDetector
 from siem.detectors.directory_traversal import DirectoryTraversalDetector
 from siem.detectors.scanner import ScannerDetector
+from siem.detectors.sigma_rule import SigmaRuleDetector
 from siem.detectors.sql_injection import SqlInjectionDetector
+from siem.detectors.yara_rule import YaraDetector
 from siem.enrichment.geoip import GeoIPEnricher
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
@@ -62,6 +64,8 @@ def _build_detectors(settings: Settings) -> list[BaseDetector]:
         ),
         SqlInjectionDetector(),
         DirectoryTraversalDetector(),
+        SigmaRuleDetector(rules_dir=settings.sigma_rules_dir),
+        YaraDetector(rules_dir=settings.yara_rules_dir),
     ]
 
 
