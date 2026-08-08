@@ -173,7 +173,7 @@ Pontos deste projeto que valem destaque em uma conversa técnica:
 - [x] Enriquecimento GeoIP
 - [x] Mapeamento MITRE ATT&CK
 - [ ] Containerização (Docker)
-- [ ] Sigma Rules / YARA
+- [x] Sigma Rules / YARA
 - [ ] API REST
 - [ ] Persistência em banco de dados
 - [ ] Detecção via Machine Learning

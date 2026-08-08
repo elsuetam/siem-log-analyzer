@@ -1,0 +1,1 @@
+"""API REST do SIEM / Log Analyzer, construída com FastAPI."""
