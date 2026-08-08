@@ -106,6 +106,12 @@ class Settings(BaseSettings):
         description="Diretório contendo regras YARA (.yar/.yara) a serem avaliadas.",
     )
 
+    # --- Persistência ---
+    database_url: str = Field(
+        default="sqlite:///./siem.db",
+        description="String de conexão SQLAlchemy (SQLite por padrão; suporta Postgres etc.).",
+    )
+
     # --- Geração de incidentes ---
     
     @field_validator("log_level")

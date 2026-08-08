@@ -1,0 +1,1 @@
+"""Camada de persistência: armazenamento de incidentes em banco de dados."""

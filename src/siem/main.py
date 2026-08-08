@@ -18,6 +18,8 @@ from siem.detectors.yara_rule import YaraDetector
 from siem.enrichment.geoip import GeoIPEnricher
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
+from siem.persistence.db import create_session_factory
+from siem.persistence.repository import IncidentRepository
 from siem.pipeline import run_pipeline
 from siem.reports.pdf_report import PDFReportGenerator
 from siem.utils.logging_config import setup_logging
@@ -152,6 +154,10 @@ def run() -> int:
         total_detections=result.total_detections,
     )
     print(f"Relatório PDF salvo em: {report_path.resolve()}")
+
+    session_factory = create_session_factory(settings.database_url)
+    IncidentRepository(session_factory).save_all(incidents)
+    print(f"{len(incidents)} incidente(s) persistido(s) em: {settings.database_url}")
 
     return 0
 

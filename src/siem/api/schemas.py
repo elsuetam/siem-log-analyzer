@@ -22,9 +22,6 @@ class AnalyzeResponse(BaseModel):
 
 
 class IncidentsResponse(BaseModel):
-    """Resposta da consulta aos incidentes da última análise."""
+    """Resposta da consulta aos incidentes persistidos no banco."""
 
     incidents: list[Incident]
-    analyzed_at: str | None = Field(
-        default=None, description="Timestamp da última análise executada, se houver."
-    )

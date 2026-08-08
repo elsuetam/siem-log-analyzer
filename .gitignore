@@ -45,3 +45,5 @@ htmlcov/
 .DS_Store
 Thumbs.db
 htmlcov/
+
+Add-Content .gitignore "`n*.db"

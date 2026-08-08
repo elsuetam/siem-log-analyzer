@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-
 from fastapi import FastAPI, HTTPException
 
 from siem.api.schemas import AnalyzeResponse, HealthResponse, IncidentsResponse
@@ -12,6 +10,8 @@ from siem.dashboard.renderer import DashboardData, DashboardRenderer
 from siem.main import _build_detectors, _discover_log_files, _enrich_with_geoip
 from siem.models.incident import Incident
 from siem.parsers.combined_log_format import CombinedLogFormatParser
+from siem.persistence.db import create_session_factory
+from siem.persistence.repository import IncidentRepository
 from siem.pipeline import run_pipeline
 
 app = FastAPI(
@@ -20,10 +20,17 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Cache simples em memória do resultado da última análise executada.
-# Suficiente para um projeto de portfólio; em produção isso viraria
-# persistência real (banco de dados), fora do escopo desta etapa.
-_last_analysis: dict[str, object] = {"incidents": [], "analyzed_at": None}
+
+def _get_repository() -> IncidentRepository:
+    """Constrói o repositório de incidentes a partir das settings atuais.
+
+    Função separada (em vez de instância global) para que os testes possam
+    substituí-la facilmente via monkeypatch, isolando cada teste em seu
+    próprio banco.
+    """
+    settings = get_settings()
+    session_factory = create_session_factory(settings.database_url)
+    return IncidentRepository(session_factory)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -37,9 +44,8 @@ def analyze() -> AnalyzeResponse:
     """Executa o pipeline completo sobre os arquivos de log configurados.
 
     Lê todos os arquivos .log do diretório configurado (SIEM_RAW_LOGS_DIR),
-    roda os detectores, calcula scores de risco, gera incidentes, e também
-    atualiza o dashboard HTML e o relatório PDF em disco (mesmo efeito
-    colateral de rodar `python -m siem.main`).
+    roda os detectores, calcula scores de risco, gera incidentes, atualiza
+    o dashboard HTML e persiste os incidentes no banco de dados.
     """
     settings = get_settings()
     settings.ensure_directories_exist()
@@ -61,8 +67,7 @@ def analyze() -> AnalyzeResponse:
 
     incidents = _enrich_with_geoip(result.incidents, settings)
 
-    _last_analysis["incidents"] = incidents
-    _last_analysis["analyzed_at"] = datetime.now(UTC).isoformat()
+    _get_repository().save_all(incidents)
 
     renderer = DashboardRenderer()
     renderer.render_to_file(
@@ -82,12 +87,16 @@ def analyze() -> AnalyzeResponse:
 
 
 @app.get("/incidents", response_model=IncidentsResponse)
-def get_incidents() -> IncidentsResponse:
-    """Retorna os incidentes da última análise executada via /analyze.
+def list_incidents() -> IncidentsResponse:
+    """Retorna os incidentes mais recentes persistidos no banco de dados."""
+    incidents: list[Incident] = _get_repository().list_all()
+    return IncidentsResponse(incidents=incidents)
 
-    Se nenhuma análise foi executada ainda nesta sessão da API, retorna
-    uma lista vazia (não é um erro — é o estado inicial esperado).
-    """
-    incidents: list[Incident] = _last_analysis["incidents"]  # type: ignore[assignment]
-    analyzed_at: str | None = _last_analysis["analyzed_at"]  # type: ignore[assignment]
-    return IncidentsResponse(incidents=incidents, analyzed_at=analyzed_at)
+
+@app.get("/incidents/{incident_id}", response_model=Incident)
+def get_incident(incident_id: str) -> Incident:
+    """Retorna um incidente específico pelo ID, ou 404 se não encontrado."""
+    incident = _get_repository().get_by_id(incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail=f"Incidente {incident_id} não encontrado.")
+    return incident

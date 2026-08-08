@@ -24,8 +24,16 @@ def test_health_returns_ok(client: TestClient) -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_incidents_returns_empty_before_any_analysis(client: TestClient) -> None:
-    """GET /incidents antes de qualquer /analyze deve retornar lista vazia."""
+def test_incidents_returns_empty_before_any_analysis(
+    client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """GET /incidents em um banco vazio (isolado) deve retornar lista vazia."""
+    test_settings = Settings(
+        _env_file=None,
+        database_url=f"sqlite:///{tmp_path / 'test.db'}",
+    )
+    monkeypatch.setattr("siem.api.app.get_settings", lambda: test_settings)
+
     response = client.get("/incidents")
 
     assert response.status_code == 200
@@ -40,7 +48,11 @@ def test_analyze_returns_404_when_no_log_files_exist(
     empty_dir = tmp_path / "empty_logs"
     empty_dir.mkdir()
 
-    test_settings = Settings(_env_file=None, raw_logs_dir=empty_dir)
+    test_settings = Settings(
+        _env_file=None,
+        raw_logs_dir=empty_dir,
+        database_url=f"sqlite:///{tmp_path / 'test.db'}",
+    )
     monkeypatch.setattr("siem.api.app.get_settings", lambda: test_settings)
 
     response = client.post("/analyze")
@@ -69,6 +81,7 @@ def test_analyze_processes_logs_and_returns_incidents(
         output_dir=output_dir,
         reports_dir=output_dir / "reports",
         dashboards_dir=output_dir / "dashboards",
+        database_url=f"sqlite:///{tmp_path / 'test.db'}",
     )
     monkeypatch.setattr("siem.api.app.get_settings", lambda: test_settings)
 
@@ -102,6 +115,7 @@ def test_incidents_reflects_last_analysis(
         output_dir=output_dir,
         reports_dir=output_dir / "reports",
         dashboards_dir=output_dir / "dashboards",
+        database_url=f"sqlite:///{tmp_path / 'test.db'}",
     )
     monkeypatch.setattr("siem.api.app.get_settings", lambda: test_settings)
 
@@ -111,4 +125,3 @@ def test_incidents_reflects_last_analysis(
     assert response.status_code == 200
     data = response.json()
     assert len(data["incidents"]) == 1
-    assert data["analyzed_at"] is not None
