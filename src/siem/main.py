@@ -11,6 +11,7 @@ from siem.dashboard.renderer import DashboardData, DashboardRenderer
 from siem.detectors.base import BaseDetector
 from siem.detectors.brute_force import BruteForceDetector
 from siem.detectors.directory_traversal import DirectoryTraversalDetector
+from siem.detectors.ml_anomaly import MLAnomalyDetector
 from siem.detectors.scanner import ScannerDetector
 from siem.detectors.sigma_rule import SigmaRuleDetector
 from siem.detectors.sql_injection import SqlInjectionDetector
@@ -55,7 +56,7 @@ def _discover_log_files(raw_logs_dir: Path, explicit_file: Path | None) -> list[
 
 def _build_detectors(settings: Settings) -> list[BaseDetector]:
     """Instancia os detectores configurados a partir das settings da aplicação."""
-    return [
+    detectors: list[BaseDetector] = [
         BruteForceDetector(
             attempts_threshold=settings.brute_force_attempts_threshold,
             window_seconds=settings.brute_force_window_seconds,
@@ -69,6 +70,16 @@ def _build_detectors(settings: Settings) -> list[BaseDetector]:
         SigmaRuleDetector(rules_dir=settings.sigma_rules_dir),
         YaraDetector(rules_dir=settings.yara_rules_dir),
     ]
+
+    if settings.enable_ml_anomaly_detection:
+        detectors.append(
+            MLAnomalyDetector(
+                contamination=settings.ml_anomaly_contamination,
+                min_ips_required=settings.ml_anomaly_min_ips,
+            )
+        )
+
+    return detectors
 
 
 def _enrich_with_geoip(incidents: list[Incident], settings: Settings) -> list[Incident]:

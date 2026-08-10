@@ -61,6 +61,21 @@ class Settings(BaseSettings):
         ge=1,
         description="Número de tentativas falhas de login para caracterizar brute force.",
     )
+    brute_force_window_seconds: int = Field(
+        default=60,
+        ge=1,
+        description="Janela de tempo (em segundos) para contabilizar tentativas de brute force.",
+    )
+    scanner_requests_threshold: int = Field(
+        default=20,
+        ge=1,
+        description="Número de requisições distintas de um mesmo IP para caracterizar scanning.",
+    )
+    scanner_window_seconds: int = Field(
+        default=10,
+        ge=1,
+        description="Janela de tempo (em segundos) para contabilizar comportamento de scanner.",
+    )
 
     # --- Geração de incidentes ---
     incident_risk_score_threshold: float = Field(
@@ -80,21 +95,6 @@ class Settings(BaseSettings):
         ge=0.1,
         description="Tempo máximo de espera pela resposta da API de GeoIP.",
     )
-    brute_force_window_seconds: int = Field(
-        default=60,
-        ge=1,
-        description="Janela de tempo (em segundos) para contabilizar tentativas de brute force.",
-    )
-    scanner_requests_threshold: int = Field(
-        default=20,
-        ge=1,
-        description="Número de requisições distintas de um mesmo IP para caracterizar scanning.",
-    )
-    scanner_window_seconds: int = Field(
-        default=10,
-        ge=1,
-        description="Janela de tempo (em segundos) para contabilizar comportamento de scanner.",
-    )
 
     # --- Regras externas (Sigma / YARA) ---
     sigma_rules_dir: Path = Field(
@@ -112,8 +112,23 @@ class Settings(BaseSettings):
         description="String de conexão SQLAlchemy (SQLite por padrão; suporta Postgres etc.).",
     )
 
-    # --- Geração de incidentes ---
-    
+    # --- Detecção de anomalias via ML ---
+    enable_ml_anomaly_detection: bool = Field(
+        default=False,
+        description="Se True, ativa o detector de anomalias baseado em Isolation Forest.",
+    )
+    ml_anomaly_contamination: float = Field(
+        default=0.1,
+        gt=0.0,
+        le=0.5,
+        description="Proporção esperada de IPs anômalos (hiperparâmetro do Isolation Forest).",
+    )
+    ml_anomaly_min_ips: int = Field(
+        default=10,
+        ge=1,
+        description="Número mínimo de IPs distintos para rodar a detecção de anomalias.",
+    )
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, value: str) -> str:
